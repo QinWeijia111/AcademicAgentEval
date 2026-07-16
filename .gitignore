@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+build/
+dist/
+results/*
+!results/.gitkeep
+resources/*
+!resources/.gitkeep
+
+# Local benchmark/model resources and secrets must never be committed.
+data/
+checkpoints/
+.env
+.env.*
+!.env.example
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
