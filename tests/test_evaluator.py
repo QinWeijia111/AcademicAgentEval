@@ -47,9 +47,7 @@ class F1EvaluatorTest(unittest.TestCase):
         self.assertAlmostEqual(evaluation.f1, 0.8)
 
     def test_empty_prediction(self) -> None:
-        evaluation = F1Evaluator().evaluate_case(
-            self.case, AgentResult(query_id="q1", papers=[])
-        )
+        evaluation = F1Evaluator().evaluate_case(self.case, AgentResult(query_id="q1", papers=[]))
         self.assertEqual((evaluation.precision, evaluation.recall, evaluation.f1), (0, 0, 0))
 
 

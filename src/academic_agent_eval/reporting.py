@@ -28,8 +28,7 @@ class HtmlReporter:
         generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
         success_rate = summary.successful_queries / summary.query_count
         rows = "".join(
-            self._query_row(item, query_texts.get(item.query_id, ""))
-            for item in evaluations
+            self._query_row(item, query_texts.get(item.query_id, "")) for item in evaluations
         )
         html = _TEMPLATE
         replacements = {
@@ -74,9 +73,9 @@ class HtmlReporter:
         status_text = "成功" if item.status == "success" else "失败"
         search_text = escape(f"{item.query_id} {query_text}", quote=True).casefold()
         matches = "".join(
-            "<li><span class=\"match-title\">"
+            '<li><span class="match-title">'
             f"{escape(match.predicted_title)}"
-            "</span><span class=\"arrow\">→</span>"
+            '</span><span class="arrow">→</span>'
             f"{escape(match.ground_truth_title)}"
             f"<code>{escape(match.method)}</code></li>"
             for match in item.matches
@@ -90,8 +89,8 @@ class HtmlReporter:
                 f"{escape(item.error)}</pre></div>"
             )
         details = (
-            '<details><summary>查看匹配明细 '
-            f"<span>{len(item.matches)}</span></summary><ul class=\"matches\">{matches}</ul>"
+            "<details><summary>查看匹配明细 "
+            f'<span>{len(item.matches)}</span></summary><ul class="matches">{matches}</ul>'
             f"{error}</details>"
         )
         return f"""
@@ -115,7 +114,7 @@ class HtmlReporter:
         emphasis = " strong" if emphasized else ""
         return (
             f'<div class="table-score {color_class}{emphasis}">'
-            f'<span>{self._percent(value)}</span>'
+            f"<span>{self._percent(value)}</span>"
             f'<i><b style="width:{self._safe_width(value)}%"></b></i></div>'
         )
 

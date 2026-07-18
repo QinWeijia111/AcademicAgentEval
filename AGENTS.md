@@ -321,6 +321,8 @@ or tool output.
 
 - Do not commit generated models, datasets, caches, virtual environments, or experiment runs.
 - Keep commits focused and explain protocol/metric changes explicitly.
+- After a code change passes its relevant validation, update `CHANGE_LOG.md` and any materially affected `CLAUDE.md`, `README.md`, and `AGENTS.md` before considering a commit.
+- A documentation reminder hook may prompt this handoff; it does not authorize or create commits. Run `git commit` only after the user explicitly asks.
 - Before pushing, inspect `git status`, run the test suite, and review staged file sizes.
 - In handoff notes, distinguish implemented, tested, and merely planned functionality.
 - If a real benchmark cannot run, state the exact blocker (credentials, hardware, API key,

@@ -31,14 +31,11 @@ class DefaultOutputParser(BaseOutputParser):
                 result = AgentResult(
                     query_id=query.query_id,
                     papers=[
-                        self._parse_item(item, rank)
-                        for rank, item in enumerate(raw_output, 1)
+                        self._parse_item(item, rank) for rank, item in enumerate(raw_output, 1)
                     ],
                 )
             else:
-                raise OutputParseError(
-                    f"unsupported output type: {type(raw_output).__name__}"
-                )
+                raise OutputParseError(f"unsupported output type: {type(raw_output).__name__}")
         except (KeyError, TypeError, ValueError) as exc:
             if isinstance(exc, OutputParseError):
                 raise

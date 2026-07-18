@@ -1,0 +1,8 @@
+{
+  "profile_id": "local-proxy-v1",
+  "official_score": false,
+  "quality_weight": 0.7,
+  "efficiency_weight": 0.2,
+  "structure_weight": 0.1,
+  "notice": "Proxy only: official F1 aggregation, efficiency normalization, and structured-output rubric are not published."
+}
