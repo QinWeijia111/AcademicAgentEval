@@ -20,7 +20,7 @@ from academic_agent_eval.datasets import BaseDataset
 from academic_agent_eval.evaluator import EvaluationSummary, F1Evaluator, QueryEvaluation
 from academic_agent_eval.parsers import BaseOutputParser, DefaultOutputParser
 from academic_agent_eval.reporting import HtmlReporter
-from academic_agent_eval.schemas import AgentResult
+from academic_agent_eval.schemas import AgentQuery, AgentResult
 from academic_agent_eval.tracking import EfficiencyTracker, merge_efficiency
 
 
@@ -79,11 +79,13 @@ class ExperimentRunner:
         try:
             self.agent.setup()
             predictions_path = output_dir / "predictions.jsonl"
-            with predictions_path.open("w", encoding="utf-8") as predictions_file, (
-                output_dir / "per_query_metrics.jsonl"
-            ).open("w", encoding="utf-8") as metrics_file, (
-                output_dir / "errors.jsonl"
-            ).open("w", encoding="utf-8") as errors_file:
+            with (
+                predictions_path.open("w", encoding="utf-8") as predictions_file,
+                (output_dir / "per_query_metrics.jsonl").open(
+                    "w", encoding="utf-8"
+                ) as metrics_file,
+                (output_dir / "errors.jsonl").open("w", encoding="utf-8") as errors_file,
+            ):
                 for case in self.dataset:
                     result = self._run_case(case.query, run_id, artifacts_dir)
                     evaluation = self.evaluator.evaluate_case(case, result)
@@ -136,8 +138,9 @@ class ExperimentRunner:
         raw_output: Any = None
         error: str | None = None
         try:
+            agent_query = AgentQuery.from_query(query)
             with tracker.measure():
-                raw_output = self.agent.search(query, context)
+                raw_output = self.agent.search(agent_query, context)
             result = self.parser.parse(raw_output, query)
         except Exception as exc:  # the harness must preserve later benchmark cases
             if tracker.snapshot().latency_ms == 0.0:
@@ -198,9 +201,7 @@ class ExperimentRunner:
         handle.write(json.dumps(data, ensure_ascii=False) + "\n")
         handle.flush()
 
-    def _write_summary_csv(
-        self, path: Path, run_id: str, summary: EvaluationSummary
-    ) -> None:
+    def _write_summary_csv(self, path: Path, run_id: str, summary: EvaluationSummary) -> None:
         row = {
             "run_id": run_id,
             "experiment": self.config.experiment_name,

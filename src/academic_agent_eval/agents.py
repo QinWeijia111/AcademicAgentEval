@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from academic_agent_eval.schemas import Query
+from academic_agent_eval.schemas import AgentQuery
 from academic_agent_eval.tracking import EfficiencyTracker
 
 
@@ -35,8 +35,8 @@ class BaseAgent(ABC):
         """Allocate long-lived resources before the experiment starts."""
 
     @abstractmethod
-    def search(self, query: Query, context: AgentContext) -> Any:
-        """Search papers for one query without accessing ground truth."""
+    def search(self, query: AgentQuery, context: AgentContext) -> Any:
+        """Search papers for one sanitized query without accessing ground truth."""
 
     def teardown(self) -> None:
         """Release long-lived resources after the experiment finishes."""

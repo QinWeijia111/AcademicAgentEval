@@ -45,6 +45,63 @@ class Query:
 
 
 @dataclass(slots=True)
+class AgentQuery:
+    """Safe query projection visible to agents and external workers only."""
+
+    query_id: str
+    text: str
+    constraints: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
+    schema_version: str = SCHEMA_VERSION
+
+    @classmethod
+    def from_query(cls, query: Query, *, metadata_allowlist: set[str] | None = None) -> AgentQuery:
+        allowed = metadata_allowlist or set()
+        return cls(
+            query_id=query.query_id,
+            text=query.text,
+            constraints=_public_mapping(query.constraints),
+            metadata=_public_mapping(
+                {key: value for key, value in query.metadata.items() if key in allowed}
+            ),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+_SENSITIVE_QUERY_FIELDS = {
+    "answer",
+    "answers",
+    "gold",
+    "ground_truth",
+    "label",
+    "labels",
+    "relevance",
+}
+
+
+def _public_mapping(value: Mapping[str, Any]) -> dict[str, Any]:
+    """Copy only query-safe values, recursively dropping evaluation label fields."""
+
+    return {
+        str(key): _public_value(item)
+        for key, item in value.items()
+        if str(key).casefold() not in _SENSITIVE_QUERY_FIELDS
+    }
+
+
+def _public_value(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return _public_mapping(value)
+    if isinstance(value, list):
+        return [_public_value(item) for item in value]
+    if isinstance(value, tuple):
+        return [_public_value(item) for item in value]
+    return value
+
+
+@dataclass(slots=True)
 class Paper:
     title: str
     paper_id: str | None = None
@@ -208,17 +265,13 @@ class EfficiencyStats:
     def from_dict(cls, data: Mapping[str, Any] | None) -> EfficiencyStats:
         data = data or {}
         llm = data.get("llm") if isinstance(data.get("llm"), Mapping) else data
-        retrieval = (
-            data.get("retrieval") if isinstance(data.get("retrieval"), Mapping) else data
-        )
+        retrieval = data.get("retrieval") if isinstance(data.get("retrieval"), Mapping) else data
         return cls(
             latency_ms=float(data.get("latency_ms", 0.0)),
             llm_calls=int(llm.get("calls", data.get("llm_calls", 0))),
             api_calls=int(retrieval.get("api_calls", data.get("api_calls", 0))),
             prompt_tokens=int(llm.get("prompt_tokens", data.get("prompt_tokens", 0))),
-            completion_tokens=int(
-                llm.get("completion_tokens", data.get("completion_tokens", 0))
-            ),
+            completion_tokens=int(llm.get("completion_tokens", data.get("completion_tokens", 0))),
             cached_tokens=int(llm.get("cached_tokens", data.get("cached_tokens", 0))),
             estimated_cost_usd=(
                 float(llm.get("estimated_cost_usd", data.get("estimated_cost_usd")))
@@ -226,8 +279,7 @@ class EfficiencyStats:
                 else None
             ),
             llm_calls_by_provider={
-                str(key): int(value)
-                for key, value in llm.get("calls_by_provider", {}).items()
+                str(key): int(value) for key, value in llm.get("calls_by_provider", {}).items()
             },
             api_calls_by_provider={
                 str(key): int(value)
